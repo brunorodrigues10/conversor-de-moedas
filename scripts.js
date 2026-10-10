@@ -1,6 +1,6 @@
 const inputValor = document.querySelector("#valor");
 const botaoConverter = document.querySelector("#botao-converter");
-const divResultato = document.querySelector("#resultado");
+const divResultado = document.querySelector("#resultado");
 
 const formatadorReal = new Intl.NumberFormat("pt-BR", {
     style: "currency",
@@ -25,7 +25,7 @@ botaoConverter.addEventListener("click", async () => {
     const cotacao = await buscarCotacao();
     const resultado = valor * cotacao;
 
-    divResultato.textContent = `${formatadorDolar.format(valor)} = ${formatadorReal.format(resultado)}`;
+    divResultado.textContent = `${formatadorDolar.format(valor)} = ${formatadorReal.format(resultado)}`;
 });
 
 
