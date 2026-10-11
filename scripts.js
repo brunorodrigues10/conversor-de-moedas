@@ -64,9 +64,6 @@ botaoConverter.addEventListener("click", async () => {
     const origem = selectOrigem.value;
     const destino = selectDestino.value;
 
-    // const origemEmReais = await obterValorEmReais(origem);
-    // const destinoEmReais = await obterValorEmReais(destino);
-
     const [origemEmReais, destinoEmReais] = await Promise.all([
         obterValorEmReais(origem),
         obterValorEmReais(destino)
