@@ -5,6 +5,9 @@ const divResultado = document.querySelector("#resultado");
 const selectOrigem = document.querySelector("#moeda-origem");
 const selectDestino = document.querySelector("#moeda-destino");
 const botaoInverter = document.querySelector("#botao-inverter");
+const mensagemErro = document.querySelector("#mensagem-erro");
+const carregando = document.querySelector("#carregando");
+
 
 const moedas = [
     { codigo: "BRL", nome: "Real Brasileiro" },
@@ -18,6 +21,22 @@ const moedas = [
 /* --------------- Variáveis --------------- */
 
 /* --------------- Funções --------------- */
+
+async function converter() {
+    const valor = Number(inputValor.value);
+    const origem = selectOrigem.value;
+    const destino = selectDestino.value;
+
+    const [origemEmReais, destinoEmReais] = await Promise.all([
+        obterValorEmReais(origem),
+        obterValorEmReais(destino),
+    ]);
+
+    const resultado = (valor * origemEmReais) / destinoEmReais;
+
+    divResultado.textContent = `${formatarMoeda(valor, origem)} = ${formatarMoeda(resultado, destino)}`;
+}
+
 
 async function obterValorEmReais(codigo) {
     if (codigo === "BRL") {
@@ -59,25 +78,6 @@ selectDestino.value = "BRL";
 
 /* --------------- Botões --------------- */
 
-botaoConverter.addEventListener("click", async () => {
-    const valor = Number(inputValor.value);
-    const origem = selectOrigem.value;
-    const destino = selectDestino.value;
-
-    const [origemEmReais, destinoEmReais] = await Promise.all([
-        obterValorEmReais(origem),
-        obterValorEmReais(destino)
-    ]);
-
-    const resultado = (valor * origemEmReais) / destinoEmReais;
-
-    divResultado.textContent = `${formatarMoeda(valor, origem)} = ${formatarMoeda(resultado, destino)}`;
-});
-
-botaoInverter.addEventListener("click", () => {
-    const temporario = selectOrigem.value;
-    selectOrigem.value = selectDestino.value;
-    selectDestino.value = temporario;
-});
+botaoConverter.addEventListener("click", converter);
 
 /* --------------- Botões --------------- */
