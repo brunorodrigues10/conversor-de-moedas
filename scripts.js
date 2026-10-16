@@ -15,10 +15,9 @@ const moedas = [
     { codigo: "EUR", nome: "Euro" },
     { codigo: "GBP", nome: "Libra Esterlina" },
     { codigo: "BTC", nome: "Bitcoin" },
-    { codigo: "JPY", nome: "Iene Japonês" },
+    { codigo: "CHF", nome: "Franco Suiço" },
 ];
 
-/* --------------- Variáveis --------------- */
 
 /* --------------- Funções --------------- */
 
@@ -37,7 +36,6 @@ async function converter() {
     divResultado.textContent = `${formatarMoeda(valor, origem)} = ${formatarMoeda(resultado, destino)}`;
 }
 
-
 async function obterValorEmReais(codigo) {
     if (codigo === "BRL") {
         return 1;
@@ -48,6 +46,12 @@ async function obterValorEmReais(codigo) {
     const dados = await resposta.json();
 
     return Number(dados[`${codigo}BRL`].bid);
+}
+
+function inverterMoedas() {
+    const temporario = selectOrigem.value;
+    selectOrigem.value = selectDestino.value;
+    selectDestino.value = temporario;
 }
 
 function formatarMoeda(valor, codigo) {
@@ -69,15 +73,17 @@ function preencherSelect(select) {
     });
 }
 
+/* --------------- Inicialização --------------- */
+
 preencherSelect(selectOrigem);
 preencherSelect(selectDestino);
 
 selectOrigem.value = "USD";
 selectDestino.value = "BRL";
-/* --------------- Funções --------------- */
+
 
 /* --------------- Botões --------------- */
 
 botaoConverter.addEventListener("click", converter);
 
-/* --------------- Botões --------------- */
+botaoInverter.addEventListener("click", inverterMoedas);
