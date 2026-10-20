@@ -8,6 +8,11 @@ const botaoInverter = document.querySelector("#botao-inverter");
 const mensagemErro = document.querySelector("#mensagem-erro");
 const carregando = document.querySelector("#carregando");
 const dataCotacao = document.querySelector("#data-cotacao");
+const areaGrafico = document.querySelector("#area-grafico");
+const tituloGrafico = document.querySelector("#titulo-grafico");
+const canvasGrafico = document.querySelector("#grafico");
+
+let grafico = null;
 
 
 const moedas = [
@@ -26,6 +31,7 @@ async function converter() {
     limparErro();
     divResultado.textContent = "";
     dataCotacao.hidden = true;
+    areaGrafico.hidden = true;
 
     const valor = Number(inputValor.value);
     const origem = selectOrigem.value;
@@ -55,18 +61,14 @@ async function converter() {
             dataCotacao.textContent = `Cotação de ${new Date(timestamp * 1000).toLocaleString("pt-BR")}`;
             dataCotacao.hidden = false;
         }
+
+        atualizarGrafico(origem, destino);
     } catch (erro) {
         console.error(erro);
         mostrarErro("Não foi possível obter a cotação. Verifique sua conexão e tente novamente");
     } finally {
         definirCarregando(false);
     }
-
-
-
-
-
-
 }
 
 async function obterValorEmReais(codigo) {
@@ -89,6 +91,26 @@ async function obterValorEmReais(codigo) {
     }
 
     return { valor: Number(cotacao.bid), timestamp: Number(cotacao.timestamp) };
+}
+
+async function buscarHistorico(codigo, dias = 15) {
+    const url = `https://economia.awesomeapi.com.br/json/daily/${codigo}-BRL/${dias}`;
+    const resposta = await fetch(url);
+
+    if (!resposta.ok) {
+        throw new Error(`Erro ${resposta.status} ao buscar histórico de ${codigo}`);
+    }
+
+    const dados = await resposta.json();
+
+    dados.reverse();
+
+    return {
+        datas: dados.map((item) =>
+            new Date(Number(item.timestamp) * 1000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
+        ),
+        valores: dados.map((item) => Number(item.bid)),
+    }
 }
 
 function inverterMoedas() {
@@ -147,6 +169,71 @@ function validarValor(valor) {
     return null;
 }
 
+function desenharGrafico(historico, codigo) {
+    if (grafico) {
+        grafico.destroy();
+    }
+
+    grafico = new Chart(canvasGrafico, {
+        type: "line",
+        data: {
+            labels: historico.datas,
+            datasets: [
+                {
+                    label: `${codigo} em reais`,
+                    data: historico.valores,
+                    borderColor: "#171717",
+                    backgroundColor: "rgba(23, 23, 23, 0.08)",
+                    borderWidth: 2,
+                    pointRadius: 2,
+                    tension: 0.3,
+                    fill: true,
+                },
+            ],
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+                legend: { display: false },
+                tooltip: {
+                    callbacks: {
+                        label: (contexto) => formatarMoeda(contexto.parsed.y, "BRL"),
+                    },
+                },
+            },
+            scales: {
+                x: { grid: { display: false } },
+                y: {
+                    ticks: { callback: (valor) => valor.toLocaleString("pt-BR") },
+                },
+            },
+        },
+    });
+}
+
+async function atualizarGrafico(origem, destino) {
+    const codigo = origem !== "BRL" ? origem : destino;
+
+    if (codigo === "BRL") {
+        areaGrafico.hidden = true;
+        return;
+    }
+
+    try {
+        const historico = await buscarHistorico(codigo);
+        tituloGrafico.textContent = `${codigo} em reais, últimos ${historico.valores.length} dias`;
+        desenharGrafico(historico, codigo);
+        areaGrafico.hidden = false;
+    } catch (erro) {
+        console.error(erro);
+        areaGrafico.hidden = true;
+    }
+}
+
+
+
 /* --------------- Inicialização --------------- */
 
 preencherSelect(selectOrigem);
@@ -161,3 +248,4 @@ selectDestino.value = "BRL";
 botaoConverter.addEventListener("click", converter);
 
 botaoInverter.addEventListener("click", inverterMoedas);
+
