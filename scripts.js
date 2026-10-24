@@ -105,12 +105,42 @@ async function buscarHistorico(codigo, dias = 15) {
 
     dados.reverse();
 
-    return {
-        datas: dados.map((item) =>
-            new Date(Number(item.timestamp) * 1000).toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" }),
-        ),
-        valores: dados.map((item) => Number(item.bid)),
+    return dados.map((item) => ({
+        data: new Date(Number(item.timestamp) * 1000).toLocaleDateString("pt-BR"),
+        valor: Number(item.bid),
+    }));
+}
+
+async function buscarHistoricoPar(origem, destino, dias = 15) {
+    const [historicoOrigem, historicoDestino] = await Promise.all([
+        origem === "BRL" ? null : buscarHistorico(origem, dias),
+        destino === "BRL" ? null : buscarHistorico(destino, dias),
+    ]);
+
+    // Origem é BRL: 1 real vale (1 ÷ cotação da moeda de destino)
+    if (!historicoOrigem) {
+        return historicoDestino.map((item) => ({
+            data: item.data,
+            valor: 1 / item.valor,
+        }));
     }
+
+    // Destino é BRL: o histórico da origem já está em reais
+    if (!historicoDestino) {
+        return historicoOrigem;
+    }
+
+    // Nenhuma é BRL: divide dia a dia, só nas datas que existem nas duas
+    const valoresDestino = new Map(
+        historicoDestino.map((item) => [item.data, item.valor]),
+    );
+
+    return historicoOrigem
+        .filter((item) => valoresDestino.has(item.data))
+        .map((item) => ({
+            data: item.data,
+            valor: item.valor / valoresDestino.get(item.data),
+        }));
 }
 
 function inverterMoedas() {
@@ -169,7 +199,11 @@ function validarValor(valor) {
     return null;
 }
 
-function desenharGrafico(historico, codigo) {
+function formatarCotacao(valor) {
+    return valor.toLocaleString("pt-BR", { maximumSignificantDigits: 6 });
+}
+
+function desenharGrafico(historico, origem, destino) {
     if (grafico) {
         grafico.destroy();
     }
@@ -177,15 +211,16 @@ function desenharGrafico(historico, codigo) {
     grafico = new Chart(canvasGrafico, {
         type: "line",
         data: {
-            labels: historico.datas,
+            labels: historico.map((item) => item.data.slice(0, 5)),
             datasets: [
                 {
-                    label: `${codigo} em reais`,
-                    data: historico.valores,
+                    label: `1 ${origem} em ${destino}`,
+                    data: historico.map((item) => item.valor),
                     borderColor: "#171717",
                     backgroundColor: "rgba(23, 23, 23, 0.08)",
                     borderWidth: 2,
                     pointRadius: 2,
+                    pointHoverRadius: 5,
                     tension: 0.3,
                     fill: true,
                 },
@@ -199,14 +234,15 @@ function desenharGrafico(historico, codigo) {
                 legend: { display: false },
                 tooltip: {
                     callbacks: {
-                        label: (contexto) => formatarMoeda(contexto.parsed.y, "BRL"),
+                        label: (contexto) =>
+                            `1 ${origem} = ${formatarCotacao(contexto.parsed.y)} ${destino}`,
                     },
                 },
             },
             scales: {
                 x: { grid: { display: false } },
                 y: {
-                    ticks: { callback: (valor) => valor.toLocaleString("pt-BR") },
+                    ticks: { callback: (valor) => formatarCotacao(valor) },
                 },
             },
         },
@@ -214,17 +250,21 @@ function desenharGrafico(historico, codigo) {
 }
 
 async function atualizarGrafico(origem, destino) {
-    const codigo = origem !== "BRL" ? origem : destino;
-
-    if (codigo === "BRL") {
+    if (origem === destino) {
         areaGrafico.hidden = true;
         return;
     }
 
     try {
-        const historico = await buscarHistorico(codigo);
-        tituloGrafico.textContent = `${codigo} em reais, últimos ${historico.valores.length} dias`;
-        desenharGrafico(historico, codigo);
+        const historico = await buscarHistoricoPar(origem, destino);
+
+        if (historico.length < 2) {
+            areaGrafico.hidden = true;
+            return;
+        }
+
+        tituloGrafico.textContent = `${origem} → ${destino}, últimas ${historico.length} cotações diárias`;
+        desenharGrafico(historico, origem, destino);
         areaGrafico.hidden = false;
     } catch (erro) {
         console.error(erro);
