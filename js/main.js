@@ -2,17 +2,14 @@
 import { moedas } from "./moedas.js";
 import { formatarMoeda, formatarCotacao } from "./formatar.js";
 import { obterValorEmReais, buscarHistoricoPar } from "./api.js";
+import {
+    inputValor, botaoConverter, divResultado, selectOrigem, selectDestino,
+    botaoInverter, dataCotacao, mostrarErro, limparErro, definirCarregando, inverterMoedas, iniciarSelects
+} from "./ui.js";
 
 /* --------------- Variáveis --------------- */
-const inputValor = document.querySelector("#valor");
-const botaoConverter = document.querySelector("#botao-converter");
-const divResultado = document.querySelector("#resultado");
-const selectOrigem = document.querySelector("#moeda-origem");
-const selectDestino = document.querySelector("#moeda-destino");
-const botaoInverter = document.querySelector("#botao-inverter");
-const mensagemErro = document.querySelector("#mensagem-erro");
-const carregando = document.querySelector("#carregando");
-const dataCotacao = document.querySelector("#data-cotacao");
+
+
 const areaGrafico = document.querySelector("#area-grafico");
 const tituloGrafico = document.querySelector("#titulo-grafico");
 const canvasGrafico = document.querySelector("#grafico");
@@ -148,11 +145,11 @@ async function converter() {
 //         }));
 // }
 
-function inverterMoedas() {
-    const temporario = selectOrigem.value;
-    selectOrigem.value = selectDestino.value;
-    selectDestino.value = temporario;
-}
+// function inverterMoedas() {
+//     const temporario = selectOrigem.value;
+//     selectOrigem.value = selectDestino.value;
+//     selectDestino.value = temporario;
+// }
 
 // function formatarMoeda(valor, codigo) {
 //     const casasMaximas = codigo === "BTC" ? 8 : 2;
@@ -164,29 +161,29 @@ function inverterMoedas() {
 //     }).format(valor);
 // }
 
-function preencherSelect(select) {
-    moedas.forEach((moeda) => {
-        const option = document.createElement("option");
-        option.value = moeda.codigo;
-        option.textContent = `${moeda.codigo} - ${moeda.nome}`;
-        select.appendChild(option);
-    });
-}
+// function preencherSelect(select) {
+//     moedas.forEach((moeda) => {
+//         const option = document.createElement("option");
+//         option.value = moeda.codigo;
+//         option.textContent = `${moeda.codigo} - ${moeda.nome}`;
+//         select.appendChild(option);
+//     });
+// }
 
-function mostrarErro(mensagem) {
-    mensagemErro.textContent = mensagem;
-    mensagemErro.hidden = false;
-}
+// function mostrarErro(mensagem) {
+//     mensagemErro.textContent = mensagem;
+//     mensagemErro.hidden = false;
+// }
 
-function limparErro() {
-    mensagemErro.textContent = "";
-    mensagemErro.hidden = true;
-}
+// function limparErro() {
+//     mensagemErro.textContent = "";
+//     mensagemErro.hidden = true;
+// }
 
-function definirCarregando(estaCarregando) {
-    carregando.hidden = !estaCarregando;
-    botaoConverter.disabled = estaCarregando;
-}
+// function definirCarregando(estaCarregando) {
+//     carregando.hidden = !estaCarregando;
+//     botaoConverter.disabled = estaCarregando;
+// }
 
 function validarValor(valor) {
     if (inputValor.value.trim() === "") {
@@ -281,11 +278,13 @@ async function atualizarGrafico(origem, destino) {
 
 /* --------------- Inicialização --------------- */
 
-preencherSelect(selectOrigem);
-preencherSelect(selectDestino);
+// preencherSelect(selectOrigem);
+// preencherSelect(selectDestino);
 
-selectOrigem.value = "USD";
-selectDestino.value = "BRL";
+// selectOrigem.value = "USD";
+// selectDestino.value = "BRL";
+
+iniciarSelects();
 
 
 /* --------------- Botões --------------- */
