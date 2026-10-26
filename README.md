@@ -1,6 +1,6 @@
 # Projeto Conversor de Moedas
 
-Aplicação web que converte valores entre moedas usando cotações reais, com histórico dos últimos 15 dias em gráfico. Feita com HTML, JavaScript puro e Tailwind CSS.
+Aplicação web que converte entre 6 moedas com cotações em tempo real (AwesomeAPI) e exibe o histórico do par escolhido em gráfico. JavaScript (ES modules, async/await), Tailwind CSS e Chart.js, com validação, tratamento de erros e layout responsivo.
 
 **Link para o projeto publicado:** https://brunorodrigues10.github.io/conversor-de-moedas/
 
