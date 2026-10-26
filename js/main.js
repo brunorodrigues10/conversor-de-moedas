@@ -1,5 +1,6 @@
 /* --------------- Importações --------------- */
 import { moedas } from "./moedas.js";
+import { formatarMoeda, formatarCotacao } from "./formatar.js";
 
 /* --------------- Variáveis --------------- */
 const inputValor = document.querySelector("#valor");
@@ -152,15 +153,15 @@ function inverterMoedas() {
     selectDestino.value = temporario;
 }
 
-function formatarMoeda(valor, codigo) {
-    const casasMaximas = codigo === "BTC" ? 8 : 2;
+// function formatarMoeda(valor, codigo) {
+//     const casasMaximas = codigo === "BTC" ? 8 : 2;
 
-    return new Intl.NumberFormat("pt-BR", {
-        style: "currency",
-        currency: codigo,
-        maximumFractionDigits: casasMaximas,
-    }).format(valor);
-}
+//     return new Intl.NumberFormat("pt-BR", {
+//         style: "currency",
+//         currency: codigo,
+//         maximumFractionDigits: casasMaximas,
+//     }).format(valor);
+// }
 
 function preencherSelect(select) {
     moedas.forEach((moeda) => {
@@ -202,9 +203,9 @@ function validarValor(valor) {
     return null;
 }
 
-function formatarCotacao(valor) {
-    return valor.toLocaleString("pt-BR", { maximumSignificantDigits: 6 });
-}
+// function formatarCotacao(valor) {
+//     return valor.toLocaleString("pt-BR", { maximumSignificantDigits: 6 });
+// }
 
 function desenharGrafico(historico, origem, destino) {
     if (grafico) {
